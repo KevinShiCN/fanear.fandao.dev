@@ -1,0 +1,200 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>饭耳「自建服务」转写接口说明｜饭耳 FanEar</title><meta name="description" content="饭耳「自建服务」转写要对接的接口：饭耳发什么、要什么返回、出错时怎么回，以及已核对过的服务。"><link rel="canonical" href="https://fanear.fandao.dev/self-hosted-asr/"><link rel="icon" href="/favicon.ico" sizes="48x48"><link rel="icon" href="/favicon.png" type="image/png"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><meta name="theme-color" content="#ffffff"><meta property="og:type" content="website"><meta property="og:site_name" content="饭耳 FanEar"><meta property="og:title" content="饭耳「自建服务」转写接口说明"><meta property="og:description" content="饭耳「自建服务」转写要对接的接口：饭耳发什么、要什么返回、出错时怎么回，以及已核对过的服务。"><meta property="og:url" content="https://fanear.fandao.dev/self-hosted-asr/"><meta property="og:image" content="https://fanear.fandao.dev/og-icon.png"><meta name="twitter:card" content="summary"><meta name="generator" content="Astro v7.3.7"><link rel="stylesheet" href="/_astro/Base.Cnjp5-22.css"><style>@media (prefers-reduced-motion:no-preference){@supports (animation-timeline:view()){.wrap>section.feature,.wrap .steps>li.step,.wrap .faq-groups>section.faq-group{view-timeline:--fe-sec block;border-top-color:#0000;position:relative}.wrap>section.feature:before,.wrap .steps>li.step:before,.wrap .faq-groups>section.faq-group:before{content:"";background:var(--c-line);transform-origin:0;width:100%;height:1px;animation-name:fe-page-rule;animation-duration:auto;animation-timing-function:cubic-bezier(.3,0,.2,1);animation-fill-mode:both;animation-timeline:--fe-sec;animation-range:entry entry 30%;position:absolute;top:-1px;left:0}.wrap>section.feature .feature-text,.wrap .steps>li.step>:not(.step-shots),.wrap .faq-groups>section.faq-group>*{animation-name:fe-page-rise;animation-duration:auto;animation-timing-function:cubic-bezier(.25,.6,.2,1);animation-fill-mode:both;animation-timeline:view();animation-range:entry entry 50%}.wrap>section.feature .feature-shots,.wrap .steps>li.step>.step-shots{animation-name:fe-page-shot;animation-duration:auto;animation-timing-function:linear;animation-fill-mode:both;animation-timeline:view();animation-range:entry cover 45%}@keyframes fe-page-rule{0%{scale:0 1}}@keyframes fe-page-rise{0%{translate:0 var(--fe-page-rise,28px)}}@keyframes fe-page-shot{0%{translate:0 var(--fe-page-shot-rise,96px);scale:.96}}}}@media (width<=767px){.wrap{--fe-page-rise:20px;--fe-page-shot-rise:64px}}
+.wrap[data-astro-cid-n6pjkpbp]{max-width:calc(var(--measure) + 2 * var(--gutter));padding:0 var(--gutter) var(--s-8);margin:0 auto}.doc[data-astro-cid-n6pjkpbp] h1{padding:var(--s-7) 0 var(--s-4);letter-spacing:.02em;font-size:34px;line-height:1.25}.doc[data-astro-cid-n6pjkpbp] h2{margin-top:var(--s-7);padding-top:var(--s-5);border-top:1px solid var(--c-line);scroll-margin-top:var(--s-5);font-size:22px}.doc[data-astro-cid-n6pjkpbp] p,.doc[data-astro-cid-n6pjkpbp] ul,.doc[data-astro-cid-n6pjkpbp] table{margin-top:var(--s-3);color:var(--c-ink-2)}.doc[data-astro-cid-n6pjkpbp] h1+p{max-width:var(--measure);font-size:18px;line-height:1.7}.doc[data-astro-cid-n6pjkpbp] ul{padding-left:1.4em}.doc[data-astro-cid-n6pjkpbp] li+li{margin-top:var(--s-2)}.doc[data-astro-cid-n6pjkpbp] code{background:var(--c-wash);color:var(--c-ink);overflow-wrap:anywhere;border-radius:4px;padding:1px 6px;font-size:.9em}.doc[data-astro-cid-n6pjkpbp] table{border-collapse:collapse;max-width:100%;font-size:15px;line-height:1.6;display:block;overflow-x:auto}.doc[data-astro-cid-n6pjkpbp] th,.doc[data-astro-cid-n6pjkpbp] td{min-width:6em;padding:var(--s-2) var(--s-3);border:1px solid var(--c-line);text-align:left;vertical-align:top}.doc[data-astro-cid-n6pjkpbp] th{background:var(--c-wash);color:var(--c-ink);white-space:nowrap}@media (width>=768px){.doc[data-astro-cid-n6pjkpbp] h1{padding:var(--s-8) 0 var(--s-5)}.doc[data-astro-cid-n6pjkpbp] h2{font-size:24px}}
+</style></head><body><a class="skip-link" href="#main">跳到正文</a><header class="site-header" data-astro-cid-nen7h5rs><div class="header-inner" data-astro-cid-nen7h5rs><a class="brand" href="/" data-astro-cid-nen7h5rs><svg class="logo" width="24" height="26" viewBox="201 172 622 680" aria-hidden="true" focusable="false" data-astro-cid-f7espo7c><g class="logo-ink" data-astro-cid-f7espo7c><rect x="201" y="172" width="70" height="64" rx="16" data-astro-cid-f7espo7c></rect><rect x="385" y="172" width="70" height="64" rx="16" data-astro-cid-f7espo7c></rect><rect x="477" y="172" width="70" height="64" rx="16" data-astro-cid-f7espo7c></rect><rect x="569" y="172" width="70" height="64" rx="16" data-astro-cid-f7espo7c></rect><rect x="753" y="172" width="70" height="64" rx="16" data-astro-cid-f7espo7c></rect><rect x="385" y="344" width="70" height="64" rx="16" data-astro-cid-f7espo7c></rect><rect x="477" y="344" width="70" height="64" rx="16" data-astro-cid-f7espo7c></rect><rect x="569" y="344" width="70" height="64" rx="16" data-astro-cid-f7espo7c></rect><rect x="385" y="516" width="70" height="64" rx="16" data-astro-cid-f7espo7c></rect><rect x="477" y="516" width="70" height="64" rx="16" data-astro-cid-f7espo7c></rect><rect x="569" y="516" width="70" height="64" rx="16" data-astro-cid-f7espo7c></rect><rect x="385" y="712" width="70" height="64" rx="16" data-astro-cid-f7espo7c></rect><rect x="477" y="680" width="70" height="64" rx="16" data-astro-cid-f7espo7c></rect><rect x="569" y="648" width="70" height="64" rx="16" data-astro-cid-f7espo7c></rect><rect x="753" y="584" width="70" height="64" rx="16" data-astro-cid-f7espo7c></rect></g><rect class="logo-me" x="293" y="172" width="70" height="604" rx="16" data-astro-cid-f7espo7c></rect><rect class="logo-p1" x="661" y="172" width="70" height="680" rx="16" data-astro-cid-f7espo7c></rect></svg><span class="brand-name" data-astro-cid-nen7h5rs>饭耳</span><span class="brand-en" data-astro-cid-nen7h5rs>FanEar</span></a><a class="status" href="/changelog/" title="现在可以装 TestFlight 测试版，还没上架 App Store。" data-astro-cid-nen7h5rs>公开测试中</a><nav class="site-nav" aria-label="栏目" data-astro-cid-nen7h5rs><a href="/features/" data-astro-cid-nen7h5rs>功能</a><a href="/guide/" data-astro-cid-nen7h5rs>使用说明</a><a href="/faq/" data-astro-cid-nen7h5rs>常见问题</a><a href="/changelog/" data-astro-cid-nen7h5rs>更新记录</a></nav></div></header><main id="main" class="wrap" data-astro-cid-n6pjkpbp><article class="doc" data-astro-cid-n6pjkpbp><h1 id="饭耳自建服务转写接口说明">饭耳「自建服务」转写接口说明</h1>
+<p>饭耳按 OpenAI 的语音转文字接口 <code>POST /v1/audio/transcriptions</code> 对接你自己的转写服务。服务端用什么软件、什么模型都行，请求和返回按下面来就能接。</p>
+<h2 id="饭耳发什么">饭耳发什么</h2>
+<ul>
+<li>地址：设置里填到 <code>/v1</code> 为止，比如 <code>https://asr.example.com/v1</code>，饭耳在后面接 <code>/audio/transcriptions</code>。公网地址只收带正规证书的 https；家里或公司局域网地址（10/8、172.16/12、192.168/16、fd00::/8、<code>.local</code>）可以用 http。</li>
+<li>一块录音（通常 15 分钟）发一次 <code>POST</code>，<code>multipart/form-data</code>，同步等结果，最多等 600 秒。没有异步任务、没有流式。「测试连接」测出只回文字的服务不整块发，切成小段一段发一次（见「只回文字的服务」）。</li>
+<li>填了密钥才带 <code>Authorization: Bearer &lt;密钥&gt;</code>；没填就不带。</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>表单字段</th>
+<th>值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>file</code></td>
+<td>文件名 <code>audio.m4a</code>，<code>Content-Type: audio/mp4</code>（AAC 单声道；默认原样，15 分钟约 7MB，不压缩）</td>
+</tr>
+<tr>
+<td><code>model</code></td>
+<td>设置里填的模型名</td>
+</tr>
+<tr>
+<td><code>response_format</code></td>
+<td>「分说话人」关：<code>verbose_json</code>；开：<code>diarized_json</code>；只回文字的服务切小段送时用测试连接测出的那种（一般是 <code>json</code>）</td>
+</tr>
+<tr>
+<td><code>temperature</code></td>
+<td><code>0</code></td>
+</tr>
+<tr>
+<td><code>chunking_strategy</code></td>
+<td>只在整块送 <code>diarized_json</code> 时发，值 <code>auto</code>（OpenAI 的分人模型超过 30 秒必须带）；切小段送不发</td>
+</tr>
+</tbody>
+</table>
+<p>不发 <code>language</code>、<code>prompt</code>、<code>timestamp_granularities</code>、<code>stream</code>。服务不认识的字段请忽略，不要报错（OpenAI 也是忽略的，2026-10-18 实测）。</p>
+<h2 id="饭耳要什么返回">饭耳要什么返回</h2>
+<p>HTTP 200，一个 JSON 对象。饭耳只读下表几样；<code>task</code>、<code>language</code>、<code>duration</code>、<code>usage</code>、<code>id</code>、<code>type</code>、<code>words</code> 等有没有都行。</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>要求</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>segments</code></td>
+<td>有就整块送：数组，一句一项；没人说话回 <code>[]</code>。没有就按只回文字的服务切小段送（见下）</td>
+</tr>
+<tr>
+<td><code>segments[].start</code>、<code>segments[].end</code></td>
+<td>有 <code>segments</code> 时必须有，数字，单位秒，从这块录音开头算；0 ≤ start ≤ end ≤ 14400</td>
+</tr>
+<tr>
+<td><code>segments[].text</code></td>
+<td>有 <code>segments</code> 时必须有，字符串</td>
+</tr>
+<tr>
+<td><code>segments[].speaker</code></td>
+<td>可选；字符串（<code>"A"</code>、<code>"SPEAKER_00"</code>、<code>"S01"</code>）或整数（<code>0</code>、<code>1</code>）都行；没有就按不分说话人显示</td>
+</tr>
+<tr>
+<td><code>text</code></td>
+<td>只回文字的服务必须有（整段文字）；有 <code>segments</code> 时只用来分清「没人说话」和「有字没有每句时间」</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><code>verbose_json</code> 和 <code>diarized_json</code> 按同一张表读：开着「分说话人」时回带 <code>speaker</code> 的 <code>verbose_json</code> 也行；关着时服务自己带了 <code>speaker</code> 也照样用。</li>
+<li>说话人标签只在这一块里有效：饭耳按出现顺序编成第 1、2、3 个人；跨块是不是同一个人由饭耳自己的声纹判断，服务不用管，也不用跨块保持一致。</li>
+<li>分段没有长度和条数限制，按时间先后排。建议一句一段（几秒到二三十秒）：饭耳里点一句话会从那句开头播放，一整块只回一段也能转，但只能从头播放。</li>
+<li>某一句的 start、end 缺了或超出范围，这一块整块算失败，不会只丢那一句。</li>
+</ul>
+<h2 id="只回文字的服务">只回文字的服务</h2>
+<p>只回整段文字、没有每句时间的服务也能接：返回里没有 <code>segments</code>、或 <code>segments</code> 空着却有 <code>text</code>，或者不认 <code>verbose_json</code>、<code>diarized_json</code> 但认 <code>json</code>。</p>
+<ul>
+<li>在设置里点「测试连接」时饭耳测出来并记住；换了地址、模型或「分说话人」开关，会重新测。</li>
+<li>以后每块：用手机自带的声音识别找出哪里有人说话，在停顿处切成最长约 30 秒的小段，没人说话的部分不发；每段发一次，<code>response_format</code> 用测出来的那种（一般是 <code>json</code>），不带 <code>chunking_strategy</code>。</li>
+<li>返回只要顶层的 <code>text</code>（字符串）。饭耳按句末标点（。！？!?）分句、按字数估每句的时间（点一句播放会差一两秒），说话的人由手机按声音认。</li>
+<li>一块要发二三十到四十次请求（15 分钟），服务要撑得住连着来的请求。</li>
+</ul>
+<h2 id="出错时">出错时</h2>
+<ul>
+<li>回非 200 的状态码，最好带 OpenAI 格式的错误体 <code>{"error":{"message":"…","type":"…","code":"…"}}</code>，饭耳把 code 和 message 放进出错详情。</li>
+<li>不认要的 <code>response_format</code> 时回 400 或 422，正文里写出 <code>response_format</code> 或格式名：饭耳会提示「关掉/打开『分说话人』再试」。</li>
+<li>没测过就只回整段文字（没有 <code>segments</code>，或 <code>segments</code> 空着却有 <code>text</code>）：饭耳提示「这个服务只回文字，没有每句时间」，点「测试连接」重测后改切小段送；这块不会当成没人说话。</li>
+<li>「测试连接」发一句约 6 秒的合成语音（m4a，不是录音）：回了带时间的 <code>segments</code> 就整块送；回了文字没有每句时间、或 400/422 不认这个格式，再用 <code>response_format=json</code> 发一次，回了文字就记成只回文字；最后不带密钥发一次，也回 200 会提示「服务没设密码」。</li>
+</ul>
+<h2 id="已核对的服务2026-10-18">已核对的服务（2026-10-18）</h2>
+<p>「实测」是真调了接口；「源码」「文档」是看了对方的代码或官方文档，没有真调。</p>
+<table>
+<thead>
+<tr>
+<th>服务</th>
+<th>「分说话人」关</th>
+<th>「分说话人」开</th>
+<th>依据</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OpenAI <code>whisper-1</code></td>
+<td>能用（不分人）</td>
+<td>400，关掉即可</td>
+<td>实测</td>
+</tr>
+<tr>
+<td>OpenAI <code>gpt-4o-transcribe-diarize</code></td>
+<td>400，要打开</td>
+<td>能用，speaker 是 A、B</td>
+<td>实测</td>
+</tr>
+<tr>
+<td>OpenAI <code>gpt-4o-transcribe</code>、<code>gpt-4o-mini-transcribe</code></td>
+<td>只回文字：切小段送</td>
+<td>只回文字：切小段送</td>
+<td>实测只回文字；切小段送没真调</td>
+</tr>
+<tr>
+<td>vLLM + Whisper</td>
+<td>能用；解码时长上限默认 600 秒，要调到 900 以上</td>
+<td>不支持</td>
+<td>源码</td>
+</tr>
+<tr>
+<td>vLLM + MOSS-Transcribe-Diarize</td>
+<td>不支持</td>
+<td>能用，speaker 是 S01…</td>
+<td>源码</td>
+</tr>
+<tr>
+<td>vLLM + Qwen3-ASR</td>
+<td>只回文字：切小段送</td>
+<td>只回文字：切小段送</td>
+<td>源码</td>
+</tr>
+<tr>
+<td>speaches（原 faster-whisper-server）</td>
+<td>能用</td>
+<td>422</td>
+<td>源码</td>
+</tr>
+<tr>
+<td>LocalAI（2026-05 以后的版本）</td>
+<td>能用；更早的版本时间是纳秒，用不了</td>
+<td>400</td>
+<td>源码</td>
+</tr>
+<tr>
+<td>whisper.cpp server（加 <code>--request-path /v1 --inference-path /audio/transcriptions --convert</code>）</td>
+<td>能用</td>
+<td>只回文字：切小段送，或关掉</td>
+<td>源码</td>
+</tr>
+<tr>
+<td>WhisperLiveKit（加 <code>--diarization</code>）</td>
+<td>能用</td>
+<td>能用</td>
+<td>源码</td>
+</tr>
+<tr>
+<td>FunASR 官方 openai_api server</td>
+<td>能用</td>
+<td>只回文字：切小段送，或关掉</td>
+<td>源码</td>
+</tr>
+<tr>
+<td>Groq</td>
+<td>能用</td>
+<td>不支持</td>
+<td>文档</td>
+</tr>
+<tr>
+<td>Together AI</td>
+<td>能用（不分人；它的说话人要另传 <code>diarize=true</code>，饭耳不发）</td>
+<td>不支持</td>
+<td>文档</td>
+</tr>
+<tr>
+<td>Mistral Voxtral</td>
+<td>多半只回文字（要另传 <code>timestamp_granularities=segment</code> 才有分句，饭耳不发）：切小段送</td>
+<td>同左</td>
+<td>文档</td>
+</tr>
+<tr>
+<td>硅基流动 SiliconFlow</td>
+<td>只回文字：切小段送</td>
+<td>只回文字：切小段送</td>
+<td>文档</td>
+</tr>
+</tbody>
+</table>
+<p>不是这个接口的服务接不上：ElevenLabs、Deepgram、AssemblyAI，以及 whisper-asr-webservice（<code>/asr</code>）。阿里云百炼、火山引擎、腾讯云饭耳已经单独接好，不走这里。</p>
+</article></main><footer class="site-footer" data-astro-cid-jo6i4kqk><div class="footer-inner" data-astro-cid-jo6i4kqk><div class="footer-brand" data-astro-cid-jo6i4kqk><svg class="logo" width="18" height="20" viewBox="201 172 622 680" aria-hidden="true" focusable="false" data-astro-cid-f7espo7c><g class="logo-ink" data-astro-cid-f7espo7c><rect x="201" y="172" width="70" height="64" rx="16" data-astro-cid-f7espo7c></rect><rect x="385" y="172" width="70" height="64" rx="16" data-astro-cid-f7espo7c></rect><rect x="477" y="172" width="70" height="64" rx="16" data-astro-cid-f7espo7c></rect><rect x="569" y="172" width="70" height="64" rx="16" data-astro-cid-f7espo7c></rect><rect x="753" y="172" width="70" height="64" rx="16" data-astro-cid-f7espo7c></rect><rect x="385" y="344" width="70" height="64" rx="16" data-astro-cid-f7espo7c></rect><rect x="477" y="344" width="70" height="64" rx="16" data-astro-cid-f7espo7c></rect><rect x="569" y="344" width="70" height="64" rx="16" data-astro-cid-f7espo7c></rect><rect x="385" y="516" width="70" height="64" rx="16" data-astro-cid-f7espo7c></rect><rect x="477" y="516" width="70" height="64" rx="16" data-astro-cid-f7espo7c></rect><rect x="569" y="516" width="70" height="64" rx="16" data-astro-cid-f7espo7c></rect><rect x="385" y="712" width="70" height="64" rx="16" data-astro-cid-f7espo7c></rect><rect x="477" y="680" width="70" height="64" rx="16" data-astro-cid-f7espo7c></rect><rect x="569" y="648" width="70" height="64" rx="16" data-astro-cid-f7espo7c></rect><rect x="753" y="584" width="70" height="64" rx="16" data-astro-cid-f7espo7c></rect></g><rect class="logo-me" x="293" y="172" width="70" height="604" rx="16" data-astro-cid-f7espo7c></rect><rect class="logo-p1" x="661" y="172" width="70" height="680" rx="16" data-astro-cid-f7espo7c></rect></svg><p data-astro-cid-jo6i4kqk><strong data-astro-cid-jo6i4kqk>饭耳 FanEar</strong><span class="footer-status" data-astro-cid-jo6i4kqk>公开测试中：现在可以装 TestFlight 测试版，还没上架 App Store。</span><span class="footer-status" data-astro-cid-jo6i4kqk>去小红书「饭耳 FanEar」主页，进群拿 TestFlight。</span><span class="footer-status" data-astro-cid-jo6i4kqk>饭耳免费。作者在做饭导五常大米，给餐厅供米。</span><a class="footer-shop" href="https://store.weixin.qq.com/shop/b/rKLGUz4XqmFKlfA?entrance_id=h5" data-astro-cid-jo6i4kqk>去送家人饭导五常大米～新米刚刚上市！</a></p></div><nav class="footer-links" aria-label="条款和其他" data-astro-cid-jo6i4kqk><a href="/terms/" data-astro-cid-jo6i4kqk>使用条款与免责声明</a><a href="/privacy/" data-astro-cid-jo6i4kqk>隐私说明</a><a href="/changelog/" data-astro-cid-jo6i4kqk>更新记录</a><a href="https://ceo.fandao.dev/" data-astro-cid-jo6i4kqk>作者 干饭CEO 的博客</a></nav></div></footer></body></html>

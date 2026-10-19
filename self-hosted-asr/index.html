@@ -5,8 +5,9 @@
 <h2 id="饭耳发什么">饭耳发什么</h2>
 <ul>
 <li>地址：设置里填到 <code>/v1</code> 为止，比如 <code>https://asr.example.com/v1</code>，饭耳在后面接 <code>/audio/transcriptions</code>。公网地址只收带正规证书的 https；家里或公司局域网地址（10/8、172.16/12、192.168/16、fd00::/8、<code>.local</code>）可以用 http。</li>
-<li>一块录音（通常 15 分钟）发一次 <code>POST</code>，<code>multipart/form-data</code>，同步等结果，最多等 600 秒。没有异步任务、没有流式。「测试连接」测出只回文字的服务不整块发，切成小段一段发一次（见「只回文字的服务」）。</li>
-<li>填了密钥才带 <code>Authorization: Bearer &lt;密钥&gt;</code>；没填就不带。</li>
+<li>一块录音（通常 15 分钟）发一次 <code>POST</code>，<code>multipart/form-data</code>。每次都带请求头 <code>Prefer: respond-async</code>：服务支持异步就先回任务号、饭耳过一会再来查（见「异步」，推荐）；不认这个头、照旧同步回结果的，饭耳等着，最多等 600 秒。没有流式。「测试连接」测出只回文字的服务不整块发，切成小段一段发一次（见「只回文字的服务」）。</li>
+<li>填了密钥才带 <code>Authorization: Bearer &lt;密钥&gt;</code>（交任务和查任务都带）；没填就不带。</li>
+<li>整块送时一次就是一整块：通常 900 秒（15 分钟，切块结束可能多出零点几秒）的录音，文件约 7MB（约 7,000,000 字节）（AAC 单声道，实测平均每小时 29MB）。服务、反向代理的单次时长和上传体积上限都要放得下，体积建议留到 15MB 以上。收不下就回 HTTP <code>413</code>，正文用错误体写清上限（如 <code>{"error":{"message":"audio longer than 300 seconds","code":"audio_too_long"}}</code>）；饭耳把它显示成「你的服务拒收了这段录音」，带上状态码和原话，不会自己改小再送。</li>
 </ul>
 <table>
 <thead>
@@ -77,18 +78,58 @@
 <li>分段没有长度和条数限制，按时间先后排。建议一句一段（几秒到二三十秒）：饭耳里点一句话会从那句开头播放，一整块只回一段也能转，但只能从头播放。</li>
 <li>某一句的 start、end 缺了或超出范围，这一块整块算失败，不会只丢那一句。</li>
 </ul>
+<h2 id="异步推荐跑得慢的模型必用">异步（推荐，跑得慢的模型必用）</h2>
+<p>一块 15 分钟的录音，CPU 或小显卡上的模型常要转好几分钟，同步等容易超时（反向代理、隧道、手机切网都会断）。支持异步的服务交上就回，饭耳过一会再来查，连接不用一直开着；App 被挂起、断网，回来凭任务号接着查，不重交。</p>
+<p>交任务：饭耳的 <code>POST {地址}/audio/transcriptions</code> 带 <code>Prefer: respond-async</code>，表单和同步一样。服务回：</p>
+<ul>
+<li>HTTP <code>202</code>，JSON <code>{"id": "任务号", "status": "queued"}</code>（<code>status</code> 也可以是 <code>processing</code>）。任务号是字符串，只用字母、数字和 <code>-._~</code> 最稳。</li>
+<li>可以带 <code>Location</code> 响应头指明查询地址（相对路径或同一个服务的完整网址；放在反向代理的子路径后面时要写对前缀，不确定就别带）。Location 必须与提交地址的协议、主机、端口相同；指向其他服务的会报错，不会把密钥带到别处。</li>
+</ul>
+<p>查任务：<code>GET {地址}/audio/transcriptions/{id}</code>（有 <code>Location</code> 用 <code>Location</code>），带同样的 <code>Authorization</code>。交上即可查询；未完成时从约 3 秒间隔起退避，最长 30 秒一次；一块最多查 24 小时。服务回 HTTP 200 和下面之一：</p>
+<table>
+<thead>
+<tr>
+<th>回包</th>
+<th>意思</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>{"id":"…","status":"queued"}</code> 或 <code>"processing"</code></td>
+<td>还在排队或在转，过一会再查（回 HTTP 202 也算还在转）</td>
+</tr>
+<tr>
+<td><code>{"id":"…","status":"completed", …}</code></td>
+<td>转完了：其余字段和同步的返回一样（<code>segments</code>、<code>text</code>，见「饭耳要什么返回」）</td>
+</tr>
+<tr>
+<td><code>{"id":"…","status":"failed","error":{"message":"…","code":"…"}}</code></td>
+<td>转失败了：饭耳把 code 和 message 放进出错详情；点重试会重新交</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>只认这四个 <code>status</code>，别的值饭耳报「任务状态不认识」，不会一直等。</li>
+<li>找不到这个任务回 HTTP <code>404</code>：饭耳重交一次；重交的也找不到就报失败，不再交（重交会让服务重算一遍）。</li>
+<li>任务状态和结果至少保留 24 小时；即使已经被查询到也不要立即删除：手机刚收到结果时可能被挂起，恢复后仍需查询。处理完即可删除临时录音，结果按保留期限清理。</li>
+<li>没带 <code>Prefer: respond-async</code> 的请求照旧同步回结果（老版本饭耳这样发）。</li>
+<li>只回文字的服务切小段送时，每段也照这个流程交和查。</li>
+<li>「测试连接」也走异步：交上测试音以后在设置页查到完成：测试音约 6 秒，每次请求最多等 30 秒，异步查询最多等 60 秒；没转完会提示，不会一直等 600 秒。</li>
+</ul>
+<p>密钥校验、结果按 24 小时清理、同一时间只跑一个任务（显存不够时）请按自己的情况加。</p>
 <h2 id="只回文字的服务">只回文字的服务</h2>
 <p>只回整段文字、没有每句时间的服务也能接：返回里没有 <code>segments</code>、或 <code>segments</code> 空着却有 <code>text</code>，或者不认 <code>verbose_json</code>、<code>diarized_json</code> 但认 <code>json</code>。</p>
 <ul>
 <li>在设置里点「测试连接」时饭耳测出来并记住；换了地址、模型或「分说话人」开关，会重新测。</li>
 <li>以后每块：用手机自带的声音识别找出哪里有人说话，在停顿处切成最长约 30 秒的小段，没人说话的部分不发；每段发一次，<code>response_format</code> 用测出来的那种（一般是 <code>json</code>），不带 <code>chunking_strategy</code>。</li>
 <li>返回只要顶层的 <code>text</code>（字符串）。饭耳按句末标点（。！？!?）分句、按字数估每句的时间（点一句播放会差一两秒），说话的人由手机按声音认。</li>
-<li>一块要发二三十到四十次请求（15 分钟），服务要撑得住连着来的请求。</li>
+<li>一块要发二三十到四十次请求（15 分钟），服务要撑得住连着来的请求；支持异步的每段也是交了再查。</li>
 </ul>
 <h2 id="出错时">出错时</h2>
 <ul>
 <li>回非 200 的状态码，最好带 OpenAI 格式的错误体 <code>{"error":{"message":"…","type":"…","code":"…"}}</code>，饭耳把 code 和 message 放进出错详情。</li>
 <li>不认要的 <code>response_format</code> 时回 400 或 422，正文里写出 <code>response_format</code> 或格式名：饭耳会提示「关掉/打开『分说话人』再试」。</li>
+<li>其他 4xx（录音太长、太大、你自己定的限制等）：饭耳提示「你的服务拒收了这段录音」，卡片上带状态码和你的错误码、原话，详情可以整段交给帮你搭服务的 AI；这不算饭耳出错。没有自定义错误码的 401、403 仍按密钥不对提示。</li>
 <li>没测过就只回整段文字（没有 <code>segments</code>，或 <code>segments</code> 空着却有 <code>text</code>）：饭耳提示「这个服务只回文字，没有每句时间」，点「测试连接」重测后改切小段送；这块不会当成没人说话。</li>
 <li>「测试连接」发一句约 6 秒的合成语音（m4a，不是录音）：回了带时间的 <code>segments</code> 就整块送；回了文字没有每句时间、或 400/422 不认这个格式，再用 <code>response_format=json</code> 发一次，回了文字就记成只回文字；最后不带密钥发一次，也回 200 会提示「服务没设密码」。</li>
 </ul>

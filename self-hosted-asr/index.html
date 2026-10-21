@@ -4,7 +4,7 @@
 <p>饭耳按 OpenAI 的语音转文字接口 <code>POST /v1/audio/transcriptions</code> 对接你自己的转写服务。服务端用什么软件、什么模型都行，请求和返回按下面来就能接。</p>
 <h2 id="饭耳发什么">饭耳发什么</h2>
 <ul>
-<li>地址：设置里填到 <code>/v1</code> 为止，比如 <code>https://asr.example.com/v1</code>，饭耳在后面接 <code>/audio/transcriptions</code>。公网地址只收带正规证书的 https；家里或公司局域网地址（10/8、172.16/12、192.168/16、fd00::/8、<code>.local</code>）可以用 http。</li>
+<li>地址：设置里填到 <code>/v1</code> 为止，比如 <code>https://asr.example.com/v1</code>，饭耳在后面接 <code>/audio/transcriptions</code>。https 和 http 都收（http 不加密，公网上能用 https 就用 https）；https 要正规证书，不收自签名证书。</li>
 <li>一块录音（通常 15 分钟）发一次 <code>POST</code>，<code>multipart/form-data</code>。每次都带请求头 <code>Prefer: respond-async</code>：服务支持异步就先回任务号、饭耳过一会再来查（见「异步」，推荐）；不认这个头、照旧同步回结果的，饭耳等着，最多等 600 秒。没有流式。「测试连接」测出只回文字的服务不整块发，切成小段一段发一次（见「只回文字的服务」）。</li>
 <li>填了密钥才带 <code>Authorization: Bearer &lt;密钥&gt;</code>（交任务和查任务都带）；没填就不带。</li>
 <li>整块送时一次就是一整块：通常 900 秒（15 分钟，切块结束可能多出零点几秒）的录音，文件约 7MB（约 7,000,000 字节）（AAC 单声道，实测平均每小时 29MB）。服务、反向代理的单次时长和上传体积上限都要放得下，体积建议留到 15MB 以上。收不下就回 HTTP <code>413</code>，正文用错误体写清上限（如 <code>{"error":{"message":"audio longer than 300 seconds","code":"audio_too_long"}}</code>）；饭耳把它显示成「你的服务拒收了这段录音」，带上状态码和原话，不会自己改小再送。</li>

@@ -34,12 +34,16 @@
 <td><code>0</code></td>
 </tr>
 <tr>
+<td><code>language</code></td>
+<td>转写语言（设置 › 语音转文字 › 转写语言，2026-10-22 起），ISO-639-1：<code>zh</code>（繁体）、<code>en</code>、<code>ja</code>、<code>ko</code>、<code>es</code>、<code>fr</code>、<code>de</code>、<code>it</code>、<code>pt</code>；转写语言是简体中文时不发，服务自己认（中英夹杂、粤语不被强制成普通话）</td>
+</tr>
+<tr>
 <td><code>chunking_strategy</code></td>
 <td>只在整块送 <code>diarized_json</code> 时发，值 <code>auto</code>（OpenAI 的分人模型超过 30 秒必须带）；切小段送不发</td>
 </tr>
 </tbody>
 </table>
-<p>不发 <code>language</code>、<code>prompt</code>、<code>timestamp_granularities</code>、<code>stream</code>。服务不认识的字段请忽略，不要报错（OpenAI 也是忽略的，2026-10-18 实测）。</p>
+<p>不发 <code>prompt</code>、<code>timestamp_granularities</code>、<code>stream</code>。服务不认识的字段请忽略，不要报错（OpenAI 也是忽略的，2026-10-18 实测）。</p>
 <h2 id="饭耳要什么返回">饭耳要什么返回</h2>
 <p>HTTP 200，一个 JSON 对象。饭耳只读下表几样；<code>task</code>、<code>language</code>、<code>duration</code>、<code>usage</code>、<code>id</code>、<code>type</code>、<code>words</code> 等有没有都行。</p>
 <table>

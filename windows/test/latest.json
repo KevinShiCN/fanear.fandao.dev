@@ -1,0 +1,11 @@
+{
+  "version": "3.0.0-beta.202611281908",
+  "notes": "小耳电脑版测试包：和 iPhone 配对后自动存记录和录音，电脑上看记录、改错字、帮手机转文字",
+  "pub_date": "2026-11-28T19:09:39Z",
+  "platforms": {
+    "windows-x86_64": {
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUcTZjS1hCY0pqOEJnRTdWYkd6SmpnN3VvbmExRTVROCtsa3YrRGdMMnFYK21SZmNwYjl2bXB4NlplUzZ2bDRlMVgxVGRERHJZU2w0Y2k2V0gzRkk1UE03ZGRidTRtb0FZPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk1ODkyOTc5CWZpbGU65bCP6ICzXzMuMC4wLWJldGEuMjAyNjExMjgxOTA4X3g2NC1zZXR1cC5leGUJdmVyc2lvbjozLjAuMC1iZXRhLjIwMjYxMTI4MTkwOApreExmWUlUSGl3Z2ZQNWNSVEtLeWt4Y2NIRzhLejhNOFlyTzhFMUJEK2NFOUUwaW1hWnNtTkY0eW1XODlQd1lTQWV5Ty9SQURwZUg0a3Vrb0N4Q25EZz09Cg==",
+      "url": "https://fanear.fandao.dev/windows/test/Earlet-3.0.0-beta.202611281908-x64-setup.exe"
+    }
+  }
+}

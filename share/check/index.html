@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>饭耳 · 连接测试</title>
+<!--
+  网页链接分享上线前的连接测试（本人北京 11-08 Q1 A：「第一步先实测在微信里打不打得开」）。
+  在微信里点开这一页，测四件事：页面打不打得开、链接 # 后面那段还在不在（解开内容的钥匙放那里）、
+  手机浏览器能不能解开加密的内容、连不连得上苹果 iCloud。这一页不上传任何东西：
+  对苹果的两个请求只看连没连上，不读返回的内容。
+-->
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #f6f5f2; --card: #ffffff; --ink: #1d1d1f; --sub: #6e6e73; --line: #e5e4e0;
+    --ok: #1f8a4c; --bad: #c4321c; --warn: #a86b00;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { color-scheme: dark; --bg: #141414; --card: #1f1f1f; --ink: #f2f2f2; --sub: #a1a1a6; --line: #333; --ok: #4cc07a; --bad: #ff6b55; --warn: #e0a640; }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 16px/1.55 -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  }
+  main { max-width: 560px; margin: 0 auto; padding: max(24px, env(safe-area-inset-top)) 16px max(32px, env(safe-area-inset-bottom)); }
+  h1 { font-size: 26px; margin: 8px 0 4px; letter-spacing: .02em; }
+  .tip { color: var(--sub); font-size: 14px; margin: 0 0 18px; }
+  .verdict { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; font-size: 18px; font-weight: 600; margin: 0 0 14px; }
+  .verdict.ok { color: var(--ok); } .verdict.bad { color: var(--bad); }
+  ol { list-style: none; margin: 0; padding: 0; background: var(--card); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+  li { display: flex; gap: 12px; padding: 14px 16px; border-top: 1px solid var(--line); }
+  li:first-child { border-top: 0; }
+  .mark { flex: 0 0 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-size: 15px; font-weight: 700; color: #fff; background: var(--sub); }
+  .mark.ok { background: var(--ok); } .mark.bad { background: var(--bad); } .mark.warn { background: var(--warn); }
+  .what { font-weight: 600; }
+  .detail { color: var(--sub); font-size: 14px; margin-top: 2px; word-break: break-all; }
+  .env { color: var(--sub); font-size: 12px; margin: 16px 2px 0; word-break: break-all; }
+  .foot { color: var(--sub); font-size: 13px; margin: 10px 2px 0; }
+</style>
+</head>
+<body>
+<main>
+  <h1>连接测试</h1>
+  <p class="tip">测之前先关掉手机上的代理（梯子），这样测出来的才是普通用户的情况。</p>
+  <p class="verdict" id="verdict">正在测，几秒钟……</p>
+  <ol id="checks"></ol>
+  <p class="env" id="env"></p>
+  <p class="foot">这一页只在你手机上跑这几项测试，不收集、不上传任何信息。测完截图发回去就行。</p>
+</main>
+<script>
+(() => {
+  "use strict";
+  // 测试用的一段密文（AES-256-GCM，12 字节 IV，密文后面带 16 字节校验）；钥匙不在这一页，在链接 # 后面的 k= 里。
+  const IV = "ilVQwpB20NEvspC9";
+  const CT = "Me0bdGaW1Bn9JZsVvZOhaTPOIzrJCOIiOWObc_ik-JHT8nczYelwwA-dOvDmxcduG13yqFuhpJtNht2WcdWCnSAGD48wr3DZYQ";
+  const EXPECT = "饭耳链接测试：这段字是在手机上解开的。";
+  // 只看连没连上：GET 这个地址苹果回 404（连上了），连不上会直接报错或超时。
+  const CLOUDKIT = "https://api.apple-cloudkit.com/database/1/iCloud.dev.fandao.fanear/production/public/records/lookup";
+  const ASSETS = "https://cvws.icloud-content.com/";
+  const TIMEOUT_MS = 12000;
+  const $ = (id) => document.getElementById(id);
+  const list = $("checks");
+  const rows = {};
+
+  function addRow(key, what) {
+    const li = document.createElement("li");
+    li.innerHTML = '<span class="mark">…</span><div><div class="what"></div><div class="detail"></div></div>';
+    li.querySelector(".what").textContent = what;
+    list.appendChild(li);
+    rows[key] = li;
+  }
+  function setRow(key, state, detail) {
+    const li = rows[key];
+    const mark = li.querySelector(".mark");
+    mark.className = "mark " + state;
+    mark.textContent = state === "ok" ? "✓" : state === "bad" ? "✕" : "!";
+    li.querySelector(".detail").textContent = detail || "";
+    li.dataset.state = state;
+  }
+  function bytes(s) {
+    s = s.replace(/-/g, "+").replace(/_/g, "/");
+    while (s.length % 4) s += "=";
+    const bin = atob(s);
+    const out = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+    return out;
+  }
+  function seconds(ms) { return (ms / 1000).toFixed(1) + " 秒"; }
+
+  async function reach(url) {
+    const ctl = typeof AbortController === "function" ? new AbortController() : null;
+    const timer = setTimeout(() => { if (ctl) ctl.abort(); }, TIMEOUT_MS);
+    const start = performance.now();
+    try {
+      await fetch(url, { mode: "no-cors", cache: "no-store", signal: ctl ? ctl.signal : undefined });
+      return { ok: true, ms: performance.now() - start };
+    } catch (e) {
+      return { ok: false, ms: performance.now() - start, why: e && e.name === "AbortError" ? "超时" : (e && e.message) || "出错" };
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  async function decrypt() {
+    if (!window.crypto || !crypto.subtle) return { ok: false, why: "这个浏览器不能解密（crypto.subtle 用不了）" };
+    const m = /(?:^#|&)k=([A-Za-z0-9_-]{43})/.exec(location.hash);
+    if (!m) return { ok: false, why: "没拿到钥匙（链接 # 后面那段丢了）" };
+    try {
+      const key = await crypto.subtle.importKey("raw", bytes(m[1]), { name: "AES-GCM" }, false, ["decrypt"]);
+      const plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv: bytes(IV) }, key, bytes(CT));
+      const text = new TextDecoder().decode(plain);
+      return text === EXPECT ? { ok: true, text } : { ok: false, why: "解出来的字不对：" + text };
+    } catch (e) {
+      return { ok: false, why: "解不开：" + ((e && e.name) || "出错") };
+    }
+  }
+
+  async function gzipRoundTrip() {
+    if (typeof CompressionStream !== "function" || typeof DecompressionStream !== "function") return false;
+    try {
+      const input = new TextEncoder().encode(EXPECT.repeat(20));
+      const packed = await new Response(new Blob([input]).stream().pipeThrough(new CompressionStream("gzip"))).arrayBuffer();
+      const back = await new Response(new Blob([packed]).stream().pipeThrough(new DecompressionStream("gzip"))).arrayBuffer();
+      return new TextDecoder().decode(back) === EXPECT.repeat(20);
+    } catch (e) {
+      return false;
+    }
+  }
+
+  async function run() {
+    const ua = navigator.userAgent || "";
+    const inWeChat = /MicroMessenger/i.test(ua);
+    const os = /iPhone|iPad|iPod/i.test(ua) ? "iPhone" : /Android/i.test(ua) ? "安卓" : "电脑或其他";
+    $("env").textContent = (inWeChat ? "在微信里打开" : "不是在微信里打开") + " · " + os + " · " + ua;
+
+    addRow("page", "这一页打开了");
+    addRow("hash", "链接 # 后面那段还在");
+    addRow("decrypt", "手机能把加密的内容解开");
+    addRow("cloudkit", "连得上苹果 iCloud（存分享内容的地方）");
+    addRow("assets", "连得上苹果放附件的服务器（以后带原声才用）");
+    addRow("gzip", "能解压（内容大时用）");
+
+    setRow("page", "ok", "从点开到现在用了 " + seconds(performance.now()));
+    const hasKey = /(?:^#|&)k=[A-Za-z0-9_-]{43}/.test(location.hash);
+    setRow("hash", hasKey ? "ok" : "bad", hasKey ? "钥匙在，网页只在你手机上用它" : "丢了：这一项不过，钥匙就没法放在链接里");
+
+    const [dec, ck, as, gz] = await Promise.all([decrypt(), reach(CLOUDKIT), reach(ASSETS), gzipRoundTrip()]);
+    setRow("decrypt", dec.ok ? "ok" : "bad", dec.ok ? "解出来是：" + dec.text : dec.why);
+    setRow("cloudkit", ck.ok ? "ok" : "bad", ck.ok ? "连上了，用了 " + seconds(ck.ms) : "连不上（" + ck.why + "，" + seconds(ck.ms) + "）");
+    setRow("assets", as.ok ? "ok" : "warn", as.ok ? "连上了，用了 " + seconds(as.ms) : "连不上（" + as.why + "）：第一版只放文字，不影响");
+    setRow("gzip", gz ? "ok" : "warn", gz ? "可以" : "不行：内容不压缩也能放，不影响");
+
+    const must = ["page", "hash", "decrypt", "cloudkit"];
+    const pass = must.every((k) => rows[k].dataset.state === "ok");
+    const v = $("verdict");
+    v.className = "verdict " + (pass ? "ok" : "bad");
+    v.textContent = pass ? "✓ 全部通过。截图发回去就行。" : "✕ 有没通过的。截图发回去。";
+  }
+
+  run();
+})();
+</script>
+</body>
+</html>
